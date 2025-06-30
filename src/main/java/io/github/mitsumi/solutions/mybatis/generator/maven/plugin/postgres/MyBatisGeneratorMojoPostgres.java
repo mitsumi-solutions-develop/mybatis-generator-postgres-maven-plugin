@@ -7,10 +7,6 @@ import io.github.mitsumi.solutions.mybatis.generator.maven.plugin.postgres.valid
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.maven.api.Language;
-import org.apache.maven.api.ProjectScope;
-import org.apache.maven.api.SourceRoot;
-import org.apache.maven.impl.DefaultSourceRoot;
 import org.apache.maven.model.Resource;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
@@ -186,22 +182,19 @@ public class MyBatisGeneratorMojoPostgres extends AbstractMojo {
             .execute(this);
     }
 
+    @SuppressWarnings("PMD.LocalVariableCouldBeFinal")
     private void after() {
         if (project != null && outputDirectory != null && outputDirectory.exists()) {
-            project.addSourceRoot(ProjectScope.MAIN, Language.JAVA_FAMILY, outputDirectory.getAbsolutePath());
-            project.addSourceRoot(sourceRoot());
+            project.addCompileSourceRoot(outputDirectory.getAbsolutePath());
+
+            Resource resource = new Resource();
+            resource.setDirectory(outputDirectory.getAbsolutePath());
+            resource.addInclude("**/*.xml");
+
+            project.addResource(resource);
         }
 
         restoreClassLoader();
-    }
-
-    @SuppressWarnings("PMD.LocalVariableCouldBeFinal")
-    private SourceRoot sourceRoot() {
-        Resource resource = new Resource();
-        resource.setDirectory(outputDirectory.getAbsolutePath());
-        resource.addInclude("**/*.xml");
-
-        return new DefaultSourceRoot(project.getBaseDirectory(), ProjectScope.MAIN, resource.getDelegate());
     }
 
     private void calculateClassPath() throws MojoExecutionException {
